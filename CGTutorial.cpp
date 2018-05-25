@@ -109,10 +109,10 @@ using namespace glm;
 // Lampe am Ende eines steuerbaren Roboters ist dritter Teil des Pflichtteils
 // (5 Punkte: 3 Rotationen, Teekanne, texturiert, Roboter, Licht am Ende) 
 
-#ifdef UEBUNG8
+#ifdef UEBUNG5
 #include "objloader.hpp"
 #endif
-#ifdef UEBUNG8
+#ifdef UEBUNG7
 #include "texture.hpp"
 #endif
 
@@ -129,6 +129,12 @@ float angle = 0;
 float XAngle = 0.0f;
 float YAngle = 0.0f;
 float ZAngle = 0.0f;
+#endif
+#ifdef UEBUNG13
+float angle0 = 0.0f;
+float angle1 = 0.0f;
+float angle2 = 0.0f;
+float angle3 = 0.0f;
 #endif
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -158,6 +164,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		break;
 	case GLFW_KEY_Q:
 		ZAngle -= 5.0f;
+		break;
+	case GLFW_KEY_UP:
+		angle0 += 5.0f;
+		break;
+	case GLFW_KEY_DOWN:
+		angle1 += 5.0f;
+		break;
+	case GLFW_KEY_RIGHT:
+		angle2 += 5.0f;
+		break;
+	case GLFW_KEY_LEFT:
+		angle3 += 5.0f;
 		break;
 #endif
 	default:
@@ -189,18 +207,34 @@ void sendMVP()
 }
 
 #ifdef UEBUNG9
-void drawCS() {
-	glm::mat4 Save = Model;
-	Model = glm::scale(Save, glm::vec3(2.0, 0.01, 001));
-	sendMVP();
-	drawWireCube();
-	Model = glm::scale(Save, glm::vec3(0.01, 2.0, 0.01));
-	sendMVP();
-	drawWireCube();
-	Model = glm::scale(Save, glm::vec3(0.01, 0.01, 2.0));
-	sendMVP();
-	drawCube();
-}
+	void drawCS() {
+		glm::mat4 Save = Model;
+		Model = glm::scale(Save, glm::vec3(1.0, 0.01, 0.01));
+		sendMVP();
+		drawWireCube();
+		Model = glm::scale(Save, glm::vec3(0.01, 1.0, 0.01));
+		sendMVP();
+		drawWireCube();
+		Model = glm::scale(Save, glm::vec3(0.01, 0.01, 1.0));
+		sendMVP();
+		drawWireCube();
+
+		Model = Save;
+	}
+#endif
+
+#ifdef UEBUNG11
+	void drawSeg(GLfloat height){
+		glm::mat4 Save = Model;
+		//transformieren der Matrize
+		Model = glm::translate(Model, glm::vec3(0, height/2, 0));
+		Model = glm::scale(Model, glm::vec3(height/6, height/2, height/6));
+		//Sende zur Grafikkarte
+		sendMVP();
+		//ZeichneSphaere Parameter: 10,10
+		drawSphere(10,10);
+		Model = Save;
+	}
 #endif
 
 int main(void)
@@ -253,14 +287,14 @@ int main(void)
 	glDepthFunc(GL_LESS);
 #endif
 
-#ifdef UEBUNG8
+#ifdef UEBUNG6
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 #else
 	programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 #endif
 
-#ifdef UEBUNG8
+#ifdef UEBUNG7
 	GLuint texture = loadBMP_custom("mandrill.bmp");
 #endif
 	// Shader auch benutzen !
@@ -268,7 +302,7 @@ int main(void)
 
 #ifdef UEBUNG5
 
-#ifndef UEBUNG8
+#ifndef UEBUNG5
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
@@ -296,7 +330,7 @@ int main(void)
 
 #endif
 
-#ifdef UEBUNG8
+#ifdef UEBUNG5
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
@@ -307,19 +341,15 @@ int main(void)
 	glGenVertexArrays(1, &vertexArrayIDTeapot);
 	glBindVertexArray(vertexArrayIDTeapot);
 
+#ifdef UEBUNG6
 	GLuint normalsBuffer;
 	glGenBuffers(1, &normalsBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
 	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0);
-
+	glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,0,(void*)0);
+#endif
 	GLuint vertexBuffer;
 	glGenBuffers(1, &vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -347,6 +377,9 @@ int main(void)
 		(void*)0);
 #endif
 
+#ifdef UEBUNG14
+	glm::mat4 lightTransform(1.0f);
+#endif
 	// Eventloop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -390,8 +423,13 @@ int main(void)
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 #endif
 
-#ifdef UEBUNG8
+
+#ifdef UEBUNG6
+	#ifdef UEBUNG14
+			glm::vec4 lightPos = lightTransform * glm::vec4(0, 0, 0, 1);
+	#else
 		glm::vec3 lightPos = glm::vec3(4, 4, -4);
+	#endif
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 #endif
 
@@ -412,9 +450,31 @@ int main(void)
 #ifdef UEBUNG8
 		Model = Save;
 		Model = glm::scale(Model, glm::vec3(0.5, 0.5, 0.5));
+#ifdef UEBUNG11
+	#ifdef UEBUNG13
+		Model = glm::rotate(Model, angle0, glm::vec3(0.0, 1.0, 0.0));
+		Model = glm::rotate(Model, angle1, glm::vec3(0.0, 0.0, 1.0));
+	#endif
+		drawSeg(1.0);
+	#ifdef UEBUNG12
+		Model = glm::translate(Model, glm::vec3(0.0, 1.0, 0.0));//Translate Roboterarm um h
+#ifdef UEBUNG13
+		Model = glm::rotate(Model, angle2, glm::vec3(0.0, 0.0, 1.0));
+#endif
+		drawSeg(0.8);//zeichne Roboterarm
+		Model = glm::translate(Model, glm::vec3(0.0, 0.8, 0.0));//Translate Roboterarm um h
+		//zeichne Roboterarm
+#ifdef UEBUNG13
+		Model = glm::rotate(Model, angle3, glm::vec3(0.0, 0.0, 1.0));
+#endif
+		drawSeg(0.6);
+		lightTransform = glm::translate(Model, glm::vec3(0, 0.6, 0));
+		Model = Save;
+	#endif
+#else
 		sendMVP();
 		drawSphere(10, 10);
-
+#endif
 #endif
 		drawCS();
 
