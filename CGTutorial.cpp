@@ -199,7 +199,7 @@ void sendMVP()
 	// in the "MVP" uniform, konstant fuer alle Eckpunkte
 	glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
 
-#ifdef UEBUNG8
+#ifdef UEBUNG6
 	glUniformMatrix4fv(glGetUniformLocation(programID, "M"), 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(programID, "V"), 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(programID, "P"), 1, GL_FALSE, &Projection[0][0]);
@@ -301,8 +301,6 @@ int main(void)
 	glUseProgram(programID);
 
 #ifdef UEBUNG5
-
-#ifndef UEBUNG5
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
@@ -320,26 +318,7 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0);
-#endif
-
-#endif
-
-#ifdef UEBUNG5
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec2> uvs;
-
-	bool result = loadOBJ("teapot.obj", vertices, uvs, normals);
-	// OpenGL gibt Objekten IDs = VBO Vertex Buffer Object
-	GLuint vertexArrayIDTeapot;
-	glGenVertexArrays(1, &vertexArrayIDTeapot);
-	glBindVertexArray(vertexArrayIDTeapot);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 #ifdef UEBUNG6
 	GLuint normalsBuffer;
@@ -348,33 +327,18 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,0,(void*)0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 #endif
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0);
-
+#ifdef UEBUNG7
 	GLuint uvBuffer;
 
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1,
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+#endif
 #endif
 
 #ifdef UEBUNG14
@@ -413,16 +377,12 @@ int main(void)
 #ifdef UEBUNG8
 			glm::mat4 Save = Model;
 			Model = glm::translate(Model, glm::vec3(1.5, 0.0, 0.0));
+#endif
+#ifdef UEBUNG5
 			Model = glm::scale(Model, glm::vec3(1.0 / 1000, 1.0 / 1000, 1.0 / 1000));
 #endif
-
+		// send to grahic card
 		sendMVP();
-
-#ifdef UEBUNG8
-		glBindVertexArray(vertexArrayIDTeapot);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-#endif
-
 
 #ifdef UEBUNG6
 	#ifdef UEBUNG14
@@ -433,12 +393,17 @@ int main(void)
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 #endif
 
-#ifdef UEBUNG8
+#ifdef UEBUNG7
 		glActiveTexture(GL_TEXTURE0);
 
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
+#endif
+
+#ifdef UEBUNG5
+		glBindVertexArray(vertexArrayIDTeapot);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 #endif
 
 #ifdef UEBUNG4
@@ -476,8 +441,9 @@ int main(void)
 		drawSphere(10, 10);
 #endif
 #endif
+#ifdef UEBUNG9
 		drawCS();
-
+#endif
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -486,8 +452,11 @@ int main(void)
         glfwPollEvents();
 	} 
 
-#ifdef UEBUNG7
+#ifdef UEBUNG5
 	glDeleteBuffers(1, &normalsBuffer);
+#endif
+
+#ifdef UEBUNG6
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &uvBuffer);
 #endif
